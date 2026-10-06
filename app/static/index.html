@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Запись на приём</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container">
+<h1>Сервис записи на приём к специалисту</h1>
+
+<section id="login">
+<h2>Авторизация</h2>
+<input id="username" placeholder="Логин" value="demo">
+<input id="password" type="password" placeholder="Пароль" value="demo">
+<button onclick="login()">Войти</button>
+<div id="loginStatus"></div>
+</section>
+
+<div id="content" class="hidden">
+<section>
+<h2>Свободные слоты</h2>
+<div id="slots"></div>
+</section>
+
+<section>
+<h2>Мои записи</h2>
+<div id="appointments"></div>
+</section>
+
+<section>
+<h2>Сводка</h2>
+<pre id="summary"></pre>
+</section>
+
+<button onclick="logout()">Выйти</button>
+</div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

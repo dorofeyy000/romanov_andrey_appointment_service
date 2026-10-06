@@ -3,39 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Запись на приём</title>
+<title>Сервис записи на приём</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+
 <div class="container">
+
 <h1>Сервис записи на приём к специалисту</h1>
 
 <section id="login">
 <h2>Авторизация</h2>
-<input id="username" placeholder="Логин" value="demo">
-<input id="password" type="password" placeholder="Пароль" value="demo">
+<input id="username" value="demo" placeholder="Логин">
+<input id="password" value="demo" type="password" placeholder="Пароль">
 <button onclick="login()">Войти</button>
 <div id="loginStatus"></div>
 </section>
 
 <div id="content" class="hidden">
-<section>
-<h2>Свободные слоты</h2>
-<div id="slots"></div>
-</section>
 
-<section>
-<h2>Мои записи</h2>
+<nav>
+<button onclick="showScreen('listScreen')">Список записей</button>
+<button onclick="showScreen('cardScreen')">Карточка записи</button>
+<button onclick="showScreen('summaryScreen')">Сводка</button>
+<button onclick="logout()">Выйти</button>
+</nav>
+
+<section id="listScreen" class="screen">
+<h2>Список записей</h2>
+
+<div class="filters">
+<select id="statusFilter" onchange="loadAppointments(1)">
+<option value="">Все</option>
+<option value="booked">Забронированные</option>
+<option value="cancelled">Отменённые</option>
+</select>
+
+<select id="pageSize" onchange="loadAppointments(1)">
+<option value="10">10</option>
+<option value="20" selected>20</option>
+<option value="50">50</option>
+</select>
+</div>
+
 <div id="appointments"></div>
+<div id="pagination"></div>
 </section>
 
-<section>
+<section id="cardScreen" class="screen hidden">
+<h2>Карточка записи</h2>
+
+<input id="appointmentId" type="number" placeholder="ID записи">
+<button onclick="loadAppointmentCard()">Открыть</button>
+
+<div id="appointmentCard"></div>
+</section>
+
+<section id="summaryScreen" class="screen hidden">
 <h2>Сводка</h2>
 <pre id="summary"></pre>
 </section>
 
-<button onclick="logout()">Выйти</button>
 </div>
+
 </div>
 
 <script src="/static/app.js"></script>

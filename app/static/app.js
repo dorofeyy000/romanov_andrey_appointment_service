@@ -1,7 +1,13 @@
+let currentPage=1;
+
 async function request(url,options={}){
     const response=await fetch(url,{credentials:"include",...options});
     const data=await response.json();
-    if(!response.ok) throw new Error(data.detail||"Ошибка");
+
+    if(!response.ok){
+        throw new Error(data.detail||"Ошибка");
+    }
+
     return data;
 }
 
@@ -15,10 +21,11 @@ async function login(){
                 password:document.getElementById("password").value
             })
         });
+
         document.getElementById("login").classList.add("hidden");
         document.getElementById("content").classList.remove("hidden");
-        document.getElementById("loginStatus").textContent="";
-        await load();
+
+        await loadAppointments(1);
     }catch(error){
         document.getElementById("loginStatus").textContent=error.message;
     }
@@ -30,50 +37,130 @@ async function logout(){
     document.getElementById("login").classList.remove("hidden");
 }
 
-async function load(){
+function showScreen(id){
+    document.querySelectorAll(".screen").forEach(screen=>{
+        screen.classList.add("hidden");
+    });
+
+    document.getElementById(id).classList.remove("hidden");
+
+    if(id==="summaryScreen"){
+        loadSummary();
+    }
+
+    if(id==="listScreen"){
+        loadAppointments(currentPage);
+    }
+}
+
+async function loadAppointments(page=1){
+    currentPage=page;
+
     try{
-        const slots=await request("/api/slots?available=true&limit=20");
-        document.getElementById("slots").innerHTML=slots.map(s=>
-            `<button onclick="book(${s.specialist_id},${s.service_id},${s.id})">
-            Слот #${s.id}: ${new Date(s.start_at).toLocaleString()}
-            </button>`
-        ).join("");
+        const status=document.getElementById("statusFilter").value;
+        const size=document.getElementById("pageSize").value;
 
-        const appointments=await request("/api/appointments?page=1&size=20");
-        document.getElementById("appointments").innerHTML=appointments.items.length
-            ? appointments.items.map(a=>
-                `<div>
-                Запись #${a.id} — ${a.status}
-                ${a.status==="booked"?`<button onclick="cancelAppointment(${a.id})">Отменить</button>`:""}
-                </div>`
-            ).join("")
-            : "Записей пока нет";
+        let url=`/api/appointments?page=${page}&size=${size}`;
 
-        const summary=await request("/api/summary");
-        document.getElementById("summary").textContent=JSON.stringify(summary,null,2);
+        if(status){
+            url+=`&status=${encodeURIComponent(status)}`;
+        }
+
+        const data=await request(url);
+
+        document.getElementById("appointments").innerHTML=data.items.length
+            ? data.items.map(item=>`
+                <div class="appointment">
+                    <div>
+                        <strong>Запись #${item.id}</strong>
+                    </div>
+                    <div>Специалист: ${item.specialist_name}</div>
+                    <div>Услуга: ${item.service_name}</div>
+                    <div>Начало: ${new Date(item.slot_start).toLocaleString()}</div>
+                    <div>Статус: ${item.status}</div>
+                    <button onclick="openCard(${item.id})">Карточка</button>
+                    ${item.status==="booked"
+                        ?`<button onclick="cancelAppointment(${item.id})">Отменить</button>`
+                        :""
+                    }
+                </div>
+            `).join("")
+            : "Записей нет";
+
+        const sizeNumber=Number(size);
+        const pages=Math.max(1,Math.ceil(data.total/sizeNumber));
+
+        let pagination="";
+
+        if(page>1){
+            pagination+=`<button onclick="loadAppointments(${page-1})">Назад</button>`;
+        }
+
+        pagination+=` Страница ${page} из ${pages} `;
+
+        if(page<pages){
+            pagination+=`<button onclick="loadAppointments(${page+1})">Вперёд</button>`;
+        }
+
+        document.getElementById("pagination").innerHTML=pagination;
     }catch(error){
         alert(error.message);
     }
 }
 
-async function book(specialist_id,service_id,slot_id){
+function openCard(id){
+    document.getElementById("appointmentId").value=id;
+    showScreen("cardScreen");
+    loadAppointmentCard();
+}
+
+async function loadAppointmentCard(){
+    const id=document.getElementById("appointmentId").value;
+
+    if(!id){
+        return;
+    }
+
     try{
-        await request("/api/appointments",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({specialist_id,service_id,slot_id})
-        });
-        await load();
+        const item=await request(`/api/appointments/${id}`);
+
+        document.getElementById("appointmentCard").innerHTML=`
+            <div class="card">
+                <h3>Запись #${item.id}</h3>
+                <p>Специалист: ${item.specialist_name}</p>
+                <p>Специальность ID: ${item.specialist_id}</p>
+                <p>Услуга: ${item.service_name}</p>
+                <p>ID услуги: ${item.service_id}</p>
+                <p>Слот: ${item.slot_id}</p>
+                <p>Начало: ${new Date(item.slot_start).toLocaleString()}</p>
+                <p>Окончание: ${new Date(item.slot_end).toLocaleString()}</p>
+                <p>Статус: ${item.status}</p>
+                <p>Создана: ${new Date(item.created_at).toLocaleString()}</p>
+            </div>
+        `;
     }catch(error){
-        alert(error.message);
+        document.getElementById("appointmentCard").textContent=error.message;
     }
 }
 
 async function cancelAppointment(id){
     try{
-        await request(`/api/appointments/${id}/cancel`,{method:"POST"});
-        await load();
+        await request(`/api/appointments/${id}/cancel`,{
+            method:"POST"
+        });
+
+        await loadAppointments(currentPage);
     }catch(error){
         alert(error.message);
+    }
+}
+
+async function loadSummary(){
+    try{
+        const summary=await request("/api/summary");
+        document.getElementById("summary").textContent=
+            JSON.stringify(summary,null,2);
+    }catch(error){
+        document.getElementById("summary").textContent=error.message;
     }
 }

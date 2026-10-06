@@ -1,12 +1,12 @@
 from datetime import datetime,timedelta
 from sqlalchemy import text
 from app.database import SessionLocal
-from app.models import User, Specialist, Service, Slot
+from app.models import User,Specialist,Service,Slot,Appointment
 
 db=SessionLocal()
 
 try:
-    db.execute(text("TRUNCATE TABLE appointments, slots, specialists, services RESTART IDENTITY CASCADE"))
+    db.execute(text("TRUNCATE TABLE appointments,slots,specialists,services RESTART IDENTITY CASCADE"))
     db.commit()
 
     user=db.query(User).filter(User.username=="demo").first()
@@ -54,17 +54,34 @@ try:
                 service_id=service.id,
                 start_at=slot_start,
                 end_at=slot_start+timedelta(minutes=service.duration_minutes),
-                is_available=True
+                is_available=i>=300
             )
         )
 
     db.add_all(slots)
     db.commit()
 
+    slots=db.query(Slot).order_by(Slot.id).all()
+
+    appointments=[
+        Appointment(
+            user_id=user.id,
+            specialist_id=slots[i].specialist_id,
+            service_id=slots[i].service_id,
+            slot_id=slots[i].id,
+            status="booked"
+        )
+        for i in range(300)
+    ]
+
+    db.add_all(appointments)
+    db.commit()
+
     print(f"Users: {db.query(User).count()}")
     print(f"Specialists: {db.query(Specialist).count()}")
     print(f"Services: {db.query(Service).count()}")
     print(f"Slots: {db.query(Slot).count()}")
+    print(f"Appointments: {db.query(Appointment).count()}")
     print("Small dataset created successfully")
 
 finally:

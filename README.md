@@ -53,9 +53,9 @@ pytest -q
 | GET /api/services | — | список услуг | 401 |
 | GET /api/slots | specialist_id, service_id, available, limit | список слотов | 401 |
 | GET /api/appointments | page, size, status | items, total | 401, 422 |
-| GET /api/appointments/{id} | id | запись | 401, 404, 422 |
+| GET /api/appointments/{id} | id | запись | 401, 404 |
 | POST /api/appointments | specialist_id, service_id, slot_id | созданная запись | 401, 409, 422 |
-| POST /api/appointments/{id}/cancel | id | обновлённая запись | 401, 404, 409, 422 |
+| POST /api/appointments/{id}/cancel | id | обновлённая запись | 401, 404, 409 |
 | GET /api/summary | — | сводные показатели | 401 |
 
 ## Три обязательных экрана

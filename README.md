@@ -47,15 +47,15 @@ pytest -q
 
 | Метод и путь | Параметры | Ответ | Ошибки |
 |---|---|---|---|
-| POST /api/auth/login | username, password | пользователь | 401 |
+| POST /api/auth/login | username, password | пользователь | 401, 422 |
 | POST /api/auth/logout | — | status | — |
 | GET /api/specialists | — | список специалистов | 401 |
 | GET /api/services | — | список услуг | 401 |
 | GET /api/slots | specialist_id, service_id, available, limit | список слотов | 401 |
-| GET /api/appointments | page, size, status | items, total | 401 |
-| GET /api/appointments/{id} | id | запись | 401, 404 |
-| POST /api/appointments | specialist_id, service_id, slot_id | созданная запись | 401, 409 |
-| POST /api/appointments/{id}/cancel | id | обновлённая запись | 401, 404, 409 |
+| GET /api/appointments | page, size, status | items, total | 401, 422 |
+| GET /api/appointments/{id} | id | запись | 401, 404, 422 |
+| POST /api/appointments | specialist_id, service_id, slot_id | созданная запись | 401, 409, 422 |
+| POST /api/appointments/{id}/cancel | id | обновлённая запись | 401, 404, 409, 422 |
 | GET /api/summary | — | сводные показатели | 401 |
 
 ## Три обязательных экрана
